@@ -61,6 +61,35 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// TCMT Custom Colors
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
+				priority: {
+					low: 'hsl(var(--priority-low))',
+					medium: 'hsl(var(--priority-medium))',
+					high: 'hsl(var(--priority-high))'
+				},
+				status: {
+					draft: 'hsl(var(--status-draft))',
+					active: 'hsl(var(--status-active))',
+					archived: 'hsl(var(--status-archived))'
+				},
+				execution: {
+					pass: 'hsl(var(--exec-pass))',
+					fail: 'hsl(var(--exec-fail))',
+					skip: 'hsl(var(--exec-skip))',
+					block: 'hsl(var(--exec-block))'
 				}
 			},
 			borderRadius: {
