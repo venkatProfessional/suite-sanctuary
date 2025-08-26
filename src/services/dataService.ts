@@ -224,6 +224,20 @@ class DataService {
     return newSuite;
   }
 
+  deleteTestSuite(id: string): boolean {
+    const suites = this.getTestSuites();
+    const index = suites.findIndex(s => s.id === id);
+    
+    if (index >= 0) {
+      suites.splice(index, 1);
+      this.setToStorage(this.STORAGE_KEYS.TEST_SUITES, suites);
+      this.logAudit('Deleted test suite', 'TestSuite', id);
+      return true;
+    }
+    
+    return false;
+  }
+
   // Test Runs & Executions
   getTestRuns(): TestRun[] {
     return this.getFromStorage(this.STORAGE_KEYS.TEST_RUNS, []);
