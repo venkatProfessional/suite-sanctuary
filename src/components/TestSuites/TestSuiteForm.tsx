@@ -33,14 +33,14 @@ export function TestSuiteForm({ suite, onSubmit, onCancel }: TestSuiteFormProps)
     defaultValues: {
       name: suite?.name || '',
       description: suite?.description || '',
-      parentId: suite?.parentId || '',
+      parentId: suite?.parentId || 'none',
     },
   });
 
   const handleSubmit = (data: TestSuiteFormData) => {
     onSubmit({
       ...data,
-      parentId: data.parentId || undefined,
+      parentId: data.parentId === 'none' ? undefined : data.parentId,
     });
   };
 
@@ -92,7 +92,7 @@ export function TestSuiteForm({ suite, onSubmit, onCancel }: TestSuiteFormProps)
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">No parent</SelectItem>
+                  <SelectItem value="none">No parent</SelectItem>
                   {availableParents.map((parentSuite) => (
                     <SelectItem key={parentSuite.id} value={parentSuite.id}>
                       {parentSuite.name}
