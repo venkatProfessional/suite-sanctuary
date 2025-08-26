@@ -30,6 +30,8 @@ export interface TestSuite {
   description: string;
   parentId?: string;
   testCaseIds: string[];
+  tags?: string[];
+  priority?: Priority;
   createdAt: string;
   updatedAt: string;
 }
