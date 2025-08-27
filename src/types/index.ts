@@ -1,6 +1,6 @@
 export type Priority = 'Low' | 'Medium' | 'High';
 export type TestCaseStatus = 'Draft' | 'Active' | 'Archived';
-export type ExecutionStatus = 'Pass' | 'Fail' | 'Skipped' | 'Blocked' | 'Not Executed';
+export type ExecutionStatus = 'Pass' | 'Fail' | 'Skipped' | 'Blocked' | 'In Progress' | 'Not Run' | 'Not Executed' | 'Other';
 
 export interface TestStep {
   id: string;
@@ -17,7 +17,10 @@ export interface TestCase {
   expectedResults: string;
   priority: Priority;
   status: TestCaseStatus;
+  executionStatus?: ExecutionStatus;
+  customStatus?: string;
   tags: string[];
+  screenshots?: FileAttachment[];
   createdAt: string;
   updatedAt: string;
   version: number;
@@ -32,6 +35,7 @@ export interface TestSuite {
   testCaseIds: string[];
   tags?: string[];
   priority?: Priority;
+  groups?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -123,4 +127,18 @@ export interface ExportOptions {
   includeHistory: boolean;
   includeExecutions: boolean;
   filters?: FilterOptions;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'tester';
+  createdAt: string;
+  lastLogin?: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
 }

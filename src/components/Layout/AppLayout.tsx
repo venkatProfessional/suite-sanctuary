@@ -8,10 +8,13 @@ import {
   BarChart3, 
   Settings,
   Menu,
-  X
+  LogOut,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { authService } from '@/services/authService';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -24,11 +27,13 @@ const navigation = [
 
 interface AppLayoutProps {
   children?: React.ReactNode;
+  onLogout?: () => void;
 }
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+export const AppLayout: React.FC<AppLayoutProps> = ({ children, onLogout }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const currentUser = authService.getCurrentUser();
 
   const isActivePath = (path: string) => {
     if (path === '/') {
@@ -69,14 +74,36 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="flex-1 flex flex-col min-h-0 bg-card border-r">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4 mb-8">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-primary-foreground" />
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div className="ml-3">
+                    <h1 className="text-xl font-bold text-foreground">TCMT</h1>
+                    <p className="text-xs text-muted-foreground">Test Case Manager</p>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <h1 className="text-xl font-bold text-foreground">TCMT</h1>
-                  <p className="text-xs text-muted-foreground">Test Case Manager</p>
-                </div>
+                {onLogout && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full">
+                        <User className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <div className="px-2 py-1.5 text-sm">
+                        <p className="font-medium">{currentUser?.username}</p>
+                        <p className="text-xs text-muted-foreground">{currentUser?.role}</p>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={onLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
             <NavItems />

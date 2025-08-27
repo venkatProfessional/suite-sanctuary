@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, X, Save, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, X, Save, AlertCircle, Upload, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { TestCase, TestStep, Priority, TestCaseStatus } from '@/types';
+import { TestCase, TestStep, Priority, TestCaseStatus, ExecutionStatus, FileAttachment, TestSuite } from '@/types';
+import { dataService } from '@/services/dataService';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TestCaseFormProps {
@@ -30,8 +31,14 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
     expectedResults: initialData?.expectedResults || '',
     priority: initialData?.priority || 'Medium' as Priority,
     status: initialData?.status || 'Draft' as TestCaseStatus,
+    executionStatus: initialData?.executionStatus || 'Not Run' as ExecutionStatus,
+    customStatus: initialData?.customStatus || '',
+    suiteId: initialData?.suiteId || '',
     tags: initialData?.tags || [] as string[]
   });
+
+  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
+  const [screenshots, setScreenshots] = useState<FileAttachment[]>(initialData?.screenshots || []);
 
   const [steps, setSteps] = useState<TestStep[]>(
     initialData?.steps || [
@@ -41,6 +48,10 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
 
   const [newTag, setNewTag] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setTestSuites(dataService.getTestSuites());
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -75,6 +86,7 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
     const testCaseData: Partial<TestCase> = {
       ...formData,
       steps: steps.filter(step => step.description.trim() && step.expectedResult.trim()),
+      screenshots,
       id: initialData?.id
     };
 
@@ -117,6 +129,34 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
       e.preventDefault();
       action();
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64Data = event.target?.result as string;
+          const attachment: FileAttachment = {
+            id: uuidv4(),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            base64Data,
+            uploadedAt: new Date().toISOString()
+          };
+          setScreenshots(prev => [...prev, attachment]);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
+
+  const removeScreenshot = (id: string) => {
+    setScreenshots(prev => prev.filter(s => s.id !== id));
   };
 
   return (
@@ -176,6 +216,57 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
                 </SelectContent>
               </Select>
             </div>
+
+            <div>
+              <Label htmlFor="suite">Test Suite</Label>
+              <Select value={formData.suiteId} onValueChange={(value: string) => 
+                setFormData({ ...formData, suiteId: value || undefined })
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a test suite" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Suite</SelectItem>
+                  {testSuites.map(suite => (
+                    <SelectItem key={suite.id} value={suite.id}>
+                      {suite.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="executionStatus">Execution Status</Label>
+              <Select value={formData.executionStatus} onValueChange={(value: ExecutionStatus) => 
+                setFormData({ ...formData, executionStatus: value })
+              }>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pass">Pass</SelectItem>
+                  <SelectItem value="Fail">Fail</SelectItem>
+                  <SelectItem value="Blocked">Blocked</SelectItem>
+                  <SelectItem value="Skipped">Skipped</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Not Run">Not Run</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.executionStatus === 'Other' && (
+              <div className="md:col-span-2">
+                <Label htmlFor="customStatus">Custom Status</Label>
+                <Input
+                  id="customStatus"
+                  placeholder="Enter custom status"
+                  value={formData.customStatus}
+                  onChange={(e) => setFormData({ ...formData, customStatus: e.target.value })}
+                />
+              </div>
+            )}
 
             <div className="md:col-span-2">
               <Label htmlFor="description">Description *</Label>
@@ -296,6 +387,58 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
               onChange={(e) => setFormData({ ...formData, expectedResults: e.target.value })}
               rows={3}
             />
+          </div>
+
+          <div>
+            <Label>Screenshots</Label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="screenshot-upload"
+                />
+                <Button type="button" variant="outline" asChild>
+                  <Label htmlFor="screenshot-upload" className="cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Screenshots
+                  </Label>
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  PNG, JPG, JPEG supported
+                </span>
+              </div>
+              
+              {screenshots.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {screenshots.map((screenshot) => (
+                    <div key={screenshot.id} className="relative group">
+                      <div className="bg-muted rounded-lg p-2 border">
+                        <div className="flex items-center space-x-2">
+                          <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-xs truncate">{screenshot.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {(screenshot.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeScreenshot(screenshot.id)}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

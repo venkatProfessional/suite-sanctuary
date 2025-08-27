@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Target, Folder, Calendar } from 'lucide-react';
 import { TestSuite } from '@/types';
 import { dataService } from '@/services/dataService';
+import { TestGroupManager } from './TestGroupManager';
 
 const testSuiteSchema = z.object({
   name: z.string()
@@ -38,6 +39,7 @@ interface TestSuiteFormProps {
 export function TestSuiteForm({ suite, onSubmit, onCancel }: TestSuiteFormProps) {
   const testSuites = dataService.getTestSuites();
   const availableParents = testSuites.filter(s => s.id !== suite?.id);
+  const [selectedGroups, setSelectedGroups] = React.useState<string[]>(suite?.groups || []);
 
   const form = useForm<TestSuiteFormData>({
     resolver: zodResolver(testSuiteSchema),
@@ -55,6 +57,7 @@ export function TestSuiteForm({ suite, onSubmit, onCancel }: TestSuiteFormProps)
       ...data,
       parentId: data.parentId === 'none' ? undefined : data.parentId,
       tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+      groups: selectedGroups,
     };
     onSubmit(processedData);
   };
@@ -208,11 +211,18 @@ export function TestSuiteForm({ suite, onSubmit, onCancel }: TestSuiteFormProps)
                 <FormDescription>
                   Add tags for easier filtering and organization (comma-separated)
                 </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="space-y-2">
+          <TestGroupManager
+            selectedGroups={selectedGroups}
+            onGroupsChange={setSelectedGroups}
           />
         </div>
+      </div>
 
         {suite && (
           <>

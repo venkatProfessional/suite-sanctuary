@@ -91,7 +91,10 @@ class DataService {
       expectedResults: testCase.expectedResults || '',
       priority: testCase.priority || 'Medium',
       status: testCase.status || 'Draft',
+      executionStatus: testCase.executionStatus || 'Not Run',
+      customStatus: testCase.customStatus,
       tags: testCase.tags || [],
+      screenshots: testCase.screenshots || [],
       createdAt: now,
       updatedAt: now,
       version: 1,
@@ -103,6 +106,11 @@ class DataService {
     this.logAudit('Created test case', 'TestCase', newTestCase.id);
     this.saveHistory(newTestCase, 'Created');
     return newTestCase;
+  }
+
+  // Public method to access storage for other services
+  public getStorageData<T>(key: string, defaultValue: T): T {
+    return this.getFromStorage(key, defaultValue);
   }
 
   deleteTestCase(id: string): boolean {
@@ -214,6 +222,9 @@ class DataService {
       description: suite.description || '',
       parentId: suite.parentId,
       testCaseIds: suite.testCaseIds || [],
+      tags: suite.tags,
+      priority: suite.priority,
+      groups: suite.groups,
       createdAt: now,
       updatedAt: now
     };
