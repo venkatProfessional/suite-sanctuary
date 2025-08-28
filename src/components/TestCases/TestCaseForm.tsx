@@ -226,7 +226,7 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
                   <SelectValue placeholder="Select a test suite" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Suite</SelectItem>
+                  <SelectItem value="no-suite">No Suite</SelectItem>
                   {testSuites.map(suite => (
                     <SelectItem key={suite.id} value={suite.id}>
                       {suite.name}
