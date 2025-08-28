@@ -29,6 +29,7 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
     description: initialData?.description || '',
     preconditions: initialData?.preconditions || '',
     expectedResults: initialData?.expectedResults || '',
+    actualResult: initialData?.actualResult || '',
     priority: initialData?.priority || 'Medium' as Priority,
     status: initialData?.status || 'Draft' as TestCaseStatus,
     executionStatus: initialData?.executionStatus || 'Not Run' as ExecutionStatus,
@@ -385,6 +386,17 @@ export const TestCaseForm: React.FC<TestCaseFormProps> = ({
               placeholder="Describe the overall expected outcome of this test case..."
               value={formData.expectedResults}
               onChange={(e) => setFormData({ ...formData, expectedResults: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="actualResult">Actual Result</Label>
+            <Textarea
+              id="actualResult"
+              placeholder="Record the actual outcome observed during execution..."
+              value={formData.actualResult}
+              onChange={(e) => setFormData({ ...formData, actualResult: e.target.value })}
               rows={3}
             />
           </div>

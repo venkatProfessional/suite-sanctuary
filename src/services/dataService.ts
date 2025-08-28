@@ -89,6 +89,7 @@ class DataService {
       preconditions: testCase.preconditions || '',
       steps: testCase.steps || [],
       expectedResults: testCase.expectedResults || '',
+      actualResult: testCase.actualResult || '',
       priority: testCase.priority || 'Medium',
       status: testCase.status || 'Draft',
       executionStatus: testCase.executionStatus || 'Not Run',

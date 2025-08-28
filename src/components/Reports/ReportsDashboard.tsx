@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, PieChart, TrendingUp, Activity, FileText, Calendar } from 'lucide-react';
+import { BarChart, PieChart, TrendingUp, Activity, FileText, Calendar, Filter } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import { dataService } from '@/services/dataService';
-import { TestCase, TestRun, ExecutionStatus } from '@/types';
+import { TestCase, TestRun, ExecutionStatus, TestSuite } from '@/types';
 import { format, subDays, isWithinInterval } from 'date-fns';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
@@ -38,10 +39,55 @@ export function ReportsDashboard() {
   const [metrics, setMetrics] = useState<ReportMetrics | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('30');
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
+  const [filteredTestCases, setFilteredTestCases] = useState<TestCase[]>([]);
+  const [executionStatusFilter, setExecutionStatusFilter] = useState<ExecutionStatus | 'all'>('all');
 
   useEffect(() => {
+    loadData();
     calculateMetrics();
   }, [selectedPeriod, dateRange]);
+
+  useEffect(() => {
+    applyExecutionStatusFilter();
+  }, [testCases, executionStatusFilter]);
+
+  const loadData = () => {
+    const cases = dataService.getTestCases();
+    const suites = dataService.getTestSuites();
+    setTestCases(cases);
+    setTestSuites(suites);
+  };
+
+  const applyExecutionStatusFilter = () => {
+    let filtered = [...testCases];
+    
+    if (executionStatusFilter !== 'all') {
+      filtered = filtered.filter(tc => tc.executionStatus === executionStatusFilter);
+    }
+    
+    setFilteredTestCases(filtered);
+  };
+
+  const getSuiteName = (suiteId?: string) => {
+    if (!suiteId) return 'No Suite';
+    const suite = testSuites.find(s => s.id === suiteId);
+    return suite?.name || 'Unknown Suite';
+  };
+
+  const getExecutionStatusColor = (status?: ExecutionStatus | string) => {
+    switch (status) {
+      case 'Pass': return 'bg-execution-pass/10 text-execution-pass border-execution-pass/20';
+      case 'Fail': return 'bg-execution-fail/10 text-execution-fail border-execution-fail/20';
+      case 'Blocked': return 'bg-execution-block/10 text-execution-block border-execution-block/20';
+      case 'Skipped': return 'bg-execution-skip/10 text-execution-skip border-execution-skip/20';
+      case 'In Progress': return 'bg-execution-progress/10 text-execution-progress border-execution-progress/20';
+      case 'Not Run': return 'bg-muted/10 text-muted-foreground border-muted/20';
+      case 'Other': return 'bg-secondary/10 text-secondary-foreground border-secondary/20';
+      default: return 'bg-muted/10 text-muted-foreground border-muted/20';
+    }
+  };
 
   const calculateMetrics = () => {
     const testCases = dataService.getTestCases();
@@ -260,27 +306,97 @@ export function ReportsDashboard() {
         </TabsList>
 
         <TabsContent value="execution" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Execution Results</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <Bar
-                  data={executionChartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false,
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Test Execution Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <Bar
+                    data={executionChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
                       },
-                    },
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Test Case Results
+                  <Select value={executionStatusFilter} onValueChange={(value: any) => setExecutionStatusFilter(value)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Results</SelectItem>
+                      <SelectItem value="Pass">Pass</SelectItem>
+                      <SelectItem value="Fail">Fail</SelectItem>
+                      <SelectItem value="Blocked">Blocked</SelectItem>
+                      <SelectItem value="Skipped">Skipped</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Not Run">Not Run</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-80 overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Test Case</TableHead>
+                        <TableHead>Suite</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTestCases.slice(0, 20).map((testCase) => (
+                        <TableRow key={testCase.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium text-sm">{testCase.title}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-xs">
+                                {testCase.description}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {getSuiteName(testCase.suiteId)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${getExecutionStatusColor(testCase.executionStatus)}`}
+                            >
+                              {testCase.executionStatus === 'Other' ? testCase.customStatus : testCase.executionStatus || 'Not Run'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {filteredTestCases.length > 20 && (
+                    <div className="text-center py-2 text-sm text-muted-foreground">
+                      Showing 20 of {filteredTestCases.length} results
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">

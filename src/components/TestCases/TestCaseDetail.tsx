@@ -157,6 +157,23 @@ export const TestCaseDetail: React.FC<TestCaseDetailProps> = ({
         </Card>
       )}
 
+      {/* Actual Results */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="w-5 h-5 text-destructive" />
+            Actual Results
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className={`p-3 rounded-md ${testCase.actualResult ? 'bg-muted/30' : 'bg-muted/10'}`}>
+            <p className="text-foreground leading-relaxed">
+              {testCase.actualResult || 'No actual results recorded yet'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Tags */}
       {testCase.tags.length > 0 && (
         <Card>

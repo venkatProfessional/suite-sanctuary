@@ -108,16 +108,17 @@ class ExportService {
         'Groups': suite?.groups?.join(', ') || 'None',
         'Priority': tc.priority,
         'Status': tc.status,
-        'Execution Status': tc.executionStatus || execution?.status || 'Not Executed',
+        'Execution Status': tc.executionStatus || execution?.status || 'Not Run',
         'Custom Status': tc.customStatus || '',
         'Preconditions': tc.preconditions,
         'Test Steps': tc.steps.map((step, index) => 
           `${index + 1}. ${step.description}`
         ).join('\n'),
-        'Expected Results': tc.steps.map((step, index) => 
+        'Step Expected Results': tc.steps.map((step, index) => 
           `${index + 1}. ${step.expectedResult}`
         ).join('\n'),
-        'Overall Expected Result': tc.expectedResults,
+        'Overall Expected Results': tc.expectedResults,
+        'Actual Result': tc.actualResult || '',
         'Tags': tc.tags.join(', '),
         'Screenshots': tc.screenshots?.length ? `${tc.screenshots.length} attached` : 'None',
         'Created Date': new Date(tc.createdAt).toLocaleDateString(),

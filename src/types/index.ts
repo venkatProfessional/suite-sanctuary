@@ -15,6 +15,7 @@ export interface TestCase {
   preconditions: string;
   steps: TestStep[];
   expectedResults: string;
+  actualResult?: string;
   priority: Priority;
   status: TestCaseStatus;
   executionStatus?: ExecutionStatus;
