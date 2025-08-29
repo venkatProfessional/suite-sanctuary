@@ -25,9 +25,14 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ testCases }) => {
         Preconditions: tc.preconditions,
         Steps: tc.steps.map((step, index) => `${index + 1}. ${step.description} → ${step.expectedResult}`).join('\n'),
         'Expected Results': tc.expectedResults,
+        'Actual Result': tc.actualResult || '',
         Priority: tc.priority,
         Status: tc.status,
+        'Execution Status': tc.executionStatus || 'Not Run',
+        'Custom Status': tc.customStatus || '',
+        'Suite Name': tc.suiteId ? (tc.suiteId === 'no-suite' ? 'No Suite' : tc.suiteId) : 'No Suite',
         Tags: tc.tags.join(', '),
+        'Screenshots Count': tc.screenshots?.length || 0,
         'Created Date': new Date(tc.createdAt).toLocaleDateString(),
         'Updated Date': new Date(tc.updatedAt).toLocaleDateString(),
         Version: tc.version
@@ -43,9 +48,14 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ testCases }) => {
         { wch: 40 }, // Preconditions
         { wch: 80 }, // Steps
         { wch: 60 }, // Expected Results
+        { wch: 60 }, // Actual Result
         { wch: 12 }, // Priority
         { wch: 12 }, // Status
+        { wch: 15 }, // Execution Status
+        { wch: 15 }, // Custom Status
+        { wch: 25 }, // Suite Name
         { wch: 30 }, // Tags
+        { wch: 15 }, // Screenshots Count
         { wch: 15 }, // Created Date
         { wch: 15 }, // Updated Date
         { wch: 10 }  // Version
@@ -118,8 +128,9 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ testCases }) => {
       
       const headers = [
         'ID', 'Title', 'Description', 'Preconditions', 'Steps', 
-        'Expected Results', 'Priority', 'Status', 'Tags', 
-        'Created Date', 'Updated Date', 'Version'
+        'Expected Results', 'Actual Result', 'Priority', 'Status', 
+        'Execution Status', 'Custom Status', 'Suite Name', 'Tags', 
+        'Screenshots Count', 'Created Date', 'Updated Date', 'Version'
       ];
 
       const csvData = [
@@ -131,9 +142,14 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ testCases }) => {
           `"${tc.preconditions.replace(/"/g, '""')}"`,
           `"${tc.steps.map((step, index) => `${index + 1}. ${step.description} → ${step.expectedResult}`).join('\n').replace(/"/g, '""')}"`,
           `"${tc.expectedResults.replace(/"/g, '""')}"`,
+          `"${(tc.actualResult || '').replace(/"/g, '""')}"`,
           `"${tc.priority}"`,
           `"${tc.status}"`,
+          `"${tc.executionStatus || 'Not Run'}"`,
+          `"${(tc.customStatus || '').replace(/"/g, '""')}"`,
+          `"${tc.suiteId ? (tc.suiteId === 'no-suite' ? 'No Suite' : tc.suiteId) : 'No Suite'}"`,
           `"${tc.tags.join(', ')}"`,
+          `"${tc.screenshots?.length || 0}"`,
           `"${new Date(tc.createdAt).toLocaleDateString()}"`,
           `"${new Date(tc.updatedAt).toLocaleDateString()}"`,
           `"${tc.version}"`
