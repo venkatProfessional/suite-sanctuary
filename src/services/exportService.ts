@@ -117,7 +117,7 @@ class ExportService {
         'Step Expected Results': tc.steps.map((step, index) => 
           `${index + 1}. ${step.expectedResult}`
         ).join('\n'),
-        'Overall Expected Results': tc.expectedResults,
+        'Expected Result': tc.expectedResults,
         'Actual Result': tc.actualResult || '',
         'Tags': tc.tags.join(', '),
         'Screenshots': tc.screenshots?.length ? `${tc.screenshots.length} attached` : 'None',

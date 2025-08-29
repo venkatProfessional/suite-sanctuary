@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { TestSuite, TestCase } from '@/types';
 import { dataService } from '@/services/dataService';
 import { TestSuiteForm } from './TestSuiteForm';
+import { TestSuiteDetail } from './TestSuiteDetail';
 import { useToast } from '@/hooks/use-toast';
 
 export function TestSuitesList() {
@@ -22,6 +23,7 @@ export function TestSuitesList() {
   const [selectedSuite, setSelectedSuite] = useState<TestSuite | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [viewingSuite, setViewingSuite] = useState<TestSuite | null>(null);
   const [expandedSuites, setExpandedSuites] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'testCount'>('name');
   const [viewMode, setViewMode] = useState<'tree' | 'grid'>('tree');
@@ -91,6 +93,10 @@ export function TestSuitesList() {
     });
   };
 
+  const handleSuiteClick = (suite: TestSuite) => {
+    setViewingSuite(suite);
+  };
+
   const getSuiteStats = (suite: TestSuite) => {
     const childSuites = getChildSuites(suite.id);
     const suiteTestCases = getSuiteTestCases(suite.id);
@@ -134,6 +140,20 @@ export function TestSuitesList() {
     }
   };
 
+  if (viewingSuite) {
+    return (
+      <TestSuiteDetail 
+        testSuite={viewingSuite}
+        onEdit={() => {
+          setSelectedSuite(viewingSuite);
+          setIsFormOpen(true);
+          setViewingSuite(null);
+        }}
+        onClose={() => setViewingSuite(null)}
+      />
+    );
+  }
+
   const renderSuite = (suite: TestSuite, level = 0) => {
     const childSuites = getChildSuites(suite.id);
     const suiteTestCases = getSuiteTestCases(suite.id);
@@ -172,9 +192,9 @@ export function TestSuitesList() {
                   </div>
                 )}
                 
-                <div className="flex-1">
+                <div className="flex-1 cursor-pointer" onClick={() => handleSuiteClick(suite)}>
                   <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold text-foreground">{suite.name}</h3>
+                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">{suite.name}</h3>
                     {stats.highPriorityTests > 0 && (
                       <Badge variant="destructive" className="text-xs">
                         {stats.highPriorityTests} High Priority

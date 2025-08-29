@@ -25,6 +25,22 @@ class DataService {
     SETTINGS: 'tcmt_settings'
   };
 
+  private getCurrentUserId(): string {
+    // Import authService to get current user
+    try {
+      const { authService } = require('../services/authService');
+      const user = authService.getCurrentUser();
+      return user?.id || 'default-user';
+    } catch {
+      return 'default-user';
+    }
+  }
+
+  private getUserStorageKey(key: string): string {
+    const userId = this.getCurrentUserId();
+    return `${key}_${userId}`;
+  }
+
   // Generic storage methods
   private getFromStorage<T>(key: string, defaultValue: T): T {
     try {
@@ -50,7 +66,7 @@ class DataService {
 
   // Test Cases
   getTestCases(): TestCase[] {
-    return this.getFromStorage(this.STORAGE_KEYS.TEST_CASES, []);
+    return this.getFromStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_CASES), []);
   }
 
   getTestCase(id: string): TestCase | null {
@@ -74,7 +90,7 @@ class DataService {
           version: existing.version + 1
         };
         testCases[index] = updated;
-        this.setToStorage(this.STORAGE_KEYS.TEST_CASES, testCases);
+        this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_CASES), testCases);
         this.logAudit('Updated test case', 'TestCase', updated.id);
         this.saveHistory(updated, 'Updated');
         return updated;
@@ -103,7 +119,7 @@ class DataService {
     };
     
     testCases.push(newTestCase);
-    this.setToStorage(this.STORAGE_KEYS.TEST_CASES, testCases);
+    this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_CASES), testCases);
     this.logAudit('Created test case', 'TestCase', newTestCase.id);
     this.saveHistory(newTestCase, 'Created');
     return newTestCase;
@@ -121,7 +137,7 @@ class DataService {
     if (index >= 0) {
       const deleted = testCases[index];
       testCases.splice(index, 1);
-      this.setToStorage(this.STORAGE_KEYS.TEST_CASES, testCases);
+      this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_CASES), testCases);
       this.logAudit('Deleted test case', 'TestCase', id);
       this.saveHistory(deleted, 'Deleted');
       return true;
@@ -194,7 +210,7 @@ class DataService {
 
   // Test Suites
   getTestSuites(): TestSuite[] {
-    return this.getFromStorage(this.STORAGE_KEYS.TEST_SUITES, []);
+    return this.getFromStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_SUITES), []);
   }
 
   getTestSuite(id: string): TestSuite | null {
@@ -211,7 +227,7 @@ class DataService {
       if (index >= 0) {
         const updated = { ...suites[index], ...suite, updatedAt: now };
         suites[index] = updated;
-        this.setToStorage(this.STORAGE_KEYS.TEST_SUITES, suites);
+        this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_SUITES), suites);
         this.logAudit('Updated test suite', 'TestSuite', updated.id);
         return updated;
       }
@@ -231,7 +247,7 @@ class DataService {
     };
     
     suites.push(newSuite);
-    this.setToStorage(this.STORAGE_KEYS.TEST_SUITES, suites);
+    this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_SUITES), suites);
     this.logAudit('Created test suite', 'TestSuite', newSuite.id);
     return newSuite;
   }
@@ -242,7 +258,7 @@ class DataService {
     
     if (index >= 0) {
       suites.splice(index, 1);
-      this.setToStorage(this.STORAGE_KEYS.TEST_SUITES, suites);
+      this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_SUITES), suites);
       this.logAudit('Deleted test suite', 'TestSuite', id);
       return true;
     }
