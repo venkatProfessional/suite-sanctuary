@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { TestCaseDetail } from '@/components/TestCases/TestCaseDetail';
 import { TestSuite, TestCase, ExecutionStatus } from '@/types';
 import { dataService } from '@/services/dataService';
 
@@ -22,6 +24,8 @@ export const TestSuiteDetail: React.FC<TestSuiteDetailProps> = ({
 }) => {
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+  const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
 
   useEffect(() => {
     loadTestCases();
@@ -278,7 +282,10 @@ export const TestSuiteDetail: React.FC<TestSuiteDetailProps> = ({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedTestCase(testCase);
+                            setIsViewDetailsOpen(true);
+                          }}>
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
@@ -323,6 +330,24 @@ export const TestSuiteDetail: React.FC<TestSuiteDetailProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Test Case Details Dialog */}
+      <ResponsiveDialog
+        isOpen={isViewDetailsOpen}
+        setIsOpen={setIsViewDetailsOpen}
+        title="Test Case Details"
+      >
+        {selectedTestCase && (
+          <TestCaseDetail
+            testCase={selectedTestCase}
+            onClose={() => setIsViewDetailsOpen(false)}
+            onEdit={() => {
+              // TODO: Implement edit functionality
+              setIsViewDetailsOpen(false);
+            }}
+          />
+        )}
+      </ResponsiveDialog>
     </div>
   );
 };
