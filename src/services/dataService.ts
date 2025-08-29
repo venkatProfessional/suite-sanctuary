@@ -22,7 +22,8 @@ class DataService {
     TEST_EXECUTIONS: 'tcmt_test_executions',
     HISTORY: 'tcmt_history',
     AUDIT_LOGS: 'tcmt_audit_logs',
-    SETTINGS: 'tcmt_settings'
+    SETTINGS: 'tcmt_settings',
+    COUNTERS: 'tcmt_counters'
   };
 
   private getCurrentUserId(): string {
@@ -64,6 +65,14 @@ class DataService {
     }
   }
 
+  // Counter management for sequential IDs
+  private getNextTestCaseId(): string {
+    const counters = this.getFromStorage(this.getUserStorageKey(this.STORAGE_KEYS.COUNTERS), { testCaseCounter: 0 });
+    counters.testCaseCounter = (counters.testCaseCounter || 0) + 1;
+    this.setToStorage(this.getUserStorageKey(this.STORAGE_KEYS.COUNTERS), counters);
+    return `TC_${counters.testCaseCounter}`;
+  }
+
   // Test Cases
   getTestCases(): TestCase[] {
     return this.getFromStorage(this.getUserStorageKey(this.STORAGE_KEYS.TEST_CASES), []);
@@ -99,7 +108,7 @@ class DataService {
     
     // Create new
     const newTestCase: TestCase = {
-      id: uuidv4(),
+      id: this.getNextTestCaseId(),
       title: testCase.title || '',
       description: testCase.description || '',
       preconditions: testCase.preconditions || '',
