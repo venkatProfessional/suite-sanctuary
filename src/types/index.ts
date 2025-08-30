@@ -1,6 +1,7 @@
 export type Priority = 'Low' | 'Medium' | 'High';
 export type TestCaseStatus = 'Draft' | 'Active' | 'Archived';
 export type ExecutionStatus = 'Pass' | 'Fail' | 'Skipped' | 'Blocked' | 'In Progress' | 'Not Run' | 'Not Executed' | 'Other';
+export type TestRunStatus = 'Not Started' | 'In Progress' | 'Completed' | 'Paused' | 'Cancelled';
 
 export interface TestStep {
   id: string;
@@ -46,21 +47,40 @@ export interface TestExecution {
   testCaseId: string;
   status: ExecutionStatus;
   comments: string;
+  actualResult?: string;
   attachments: FileAttachment[];
   executedAt: string;
   executedBy: string;
   runId: string;
+  startedAt?: string;
+  duration?: number; // in seconds
+  stepResults?: TestStepResult[];
+}
+
+export interface TestStepResult {
+  stepId: string;
+  status: ExecutionStatus;
+  actualResult: string;
+  comments?: string;
+  screenshots?: FileAttachment[];
 }
 
 export interface TestRun {
   id: string;
   name: string;
   description: string;
-  suiteId: string;
+  projectId?: string;
+  suiteIds: string[];
+  testCaseIds: string[];
   executions: TestExecution[];
+  status: TestRunStatus;
+  assignedTo?: string[];
   createdAt: string;
   updatedAt: string;
+  startedAt?: string;
   completedAt?: string;
+  pausedAt?: string;
+  currentExecutionIndex?: number;
 }
 
 export interface FileAttachment {

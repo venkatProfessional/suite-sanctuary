@@ -1,8 +1,8 @@
 import React from 'react';
-import { TestRunsList } from '@/components/TestRuns/TestRunsList';
+import { EnhancedTestRunsList } from '@/components/TestRuns/EnhancedTestRunsList';
 
 const TestRuns: React.FC = () => {
-  return <TestRunsList />;
+  return <EnhancedTestRunsList />;
 };
 
 export default TestRuns;

@@ -229,19 +229,25 @@ export const createSampleData = () => {
     {
       name: 'Sprint 1 Regression',
       description: 'Regression testing for Sprint 1 features',
-      suiteId: loginSuite.id,
+      suiteIds: [loginSuite.id],
+      testCaseIds: [],
+      status: 'Not Started' as const,
       executions: []
     },
     {
       name: 'Dashboard Feature Testing',
       description: 'Focused testing on dashboard functionality',
-      suiteId: dashboardSuite.id,
+      suiteIds: [dashboardSuite.id],
+      testCaseIds: [],
+      status: 'Not Started' as const,
       executions: []
     },
     {
       name: 'API Integration Tests',
       description: 'Testing API integrations and data flow',
-      suiteId: apiSuite.id,
+      suiteIds: [apiSuite.id],
+      testCaseIds: [],
+      status: 'Not Started' as const,
       executions: []
     }
   ];

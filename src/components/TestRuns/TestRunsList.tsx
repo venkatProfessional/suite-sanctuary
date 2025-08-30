@@ -125,7 +125,7 @@ export function TestRunsList() {
             const progress = getRunProgress(run);
             const status = getRunStatus(run);
             const passRate = getPassRate(run.executions);
-            const suite = testSuites.find(s => s.id === run.suiteId);
+            const suite = testSuites.find(s => run.suiteIds.includes(s.id));
 
             return (
               <Card key={run.id} className="hover:shadow-md transition-shadow">
